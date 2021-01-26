@@ -1,0 +1,3 @@
+---
+dependencies:
+  - ansible.posix.sysctl

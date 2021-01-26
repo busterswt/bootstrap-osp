@@ -49,13 +49,16 @@ info_block "Bootstrapping Baremetal Director Node..."
 # Create the ssh dir if needed
 ssh_key_create
 
+# Install ansible collections
+ansible-galaxy install -r requirements.yml
+
 # Determine the distribution which the host is running on
 determine_distro
 
 # Install the base packages
 case ${DISTRO_ID} in
     centos|rhel)
-        dnf group install \
+        dnf -y group install \
             'Virtualization host' 'Virtualization Client'
         dnf -y update
         ;;

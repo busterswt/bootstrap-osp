@@ -88,7 +88,6 @@ function exit_success {
 
 function exit_fail {
   set +x
-  log_instance_info
   info_block "Error Info - $@"
   exit_state 1
 }

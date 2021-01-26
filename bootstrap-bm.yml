@@ -1,0 +1,6 @@
+---
+# First, we need to bootstrap our baremetal director node.
+
+- hosts: localhost
+  roles:
+    - bootstrap-bm

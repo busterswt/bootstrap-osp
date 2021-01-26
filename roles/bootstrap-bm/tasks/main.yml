@@ -5,3 +5,25 @@
     value: '1'
     sysctl_file: /etc/sysctl.d/ip_forward.conf
     state: present
+
+## Configure networking (local)
+## - em1 is configured (default)
+## - emX and emY to make up bond0
+## - br-ctlplane
+## - br-ex
+## - br-ipmi
+
+- name: Configure nmcli bond(s)
+  community.general.nmcli:
+    type: bond
+    conn_name: '{{ item.conn_name }}'
+    ip4: '{{ item.ip4 }}'
+    gw4: '{{ item.gw4 }}'
+    mode: '{{ item.mode }}'
+    state: present
+    with_items:
+      - '{{ nmcli_bond }}'
+
+## Configure storage pool (if necessary)
+
+

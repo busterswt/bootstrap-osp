@@ -50,7 +50,7 @@ info_block "Bootstrapping Baremetal Director Node..."
 ssh_key_create
 
 # Install ansible collections
-ansible-galaxy install -r requirements.yml
+ansible-galaxy collection install -r requirements.yml
 
 # Determine the distribution which the host is running on
 determine_distro

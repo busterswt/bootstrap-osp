@@ -1,0 +1,14 @@
+---
+# Bond vars
+nmcli_bond:
+  - conn_name: bond0
+    ip4: ''
+    gw4: ''
+    mode: active-backup
+nmcli_bond_slave:
+  - conn_name: eno3
+    ifname: eno3
+    master: bond0
+  - conn_name: eno4
+    ifname: eno4
+    master: bond0

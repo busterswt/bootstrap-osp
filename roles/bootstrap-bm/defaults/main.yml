@@ -12,3 +12,15 @@ nmcli_bond_slave:
   - conn_name: eno4
     ifname: eno4
     master: bond0
+
+# Bridge vars
+nmcli_bridge:
+  - conn_name: br-ctlplane
+    ip4: ''
+    gw4: ''
+  - conn_name: br-ipmi
+    ip4: ''
+    gw4: ''
+  - conn_name: br-ex
+    ip4: ''
+    gw4: ''

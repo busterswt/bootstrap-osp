@@ -1,6 +1,5 @@
 ---
-- name: Restart networking services
+- name: restart networking
   ansible.builtin.service:
     name: NetworkManager
     state: restarted
-    listen: "restart networking"

@@ -24,7 +24,7 @@
   with_items:
     - '{{ nmcli_bond }}'
   notify:
-    - restart_networking
+    - restart networking
 
 - name: Try nmcli add bond-slave(s)
   community.general.nmcli:
@@ -36,7 +36,19 @@
   with_items:
     - '{{ nmcli_bond_slave }}'
   notify:
-    - restart_networking
+    - restart networking
+
+- name: Configure nmcli bridge(s)
+  community.general.nmcli:
+    type: bridge
+    conn_name: '{{ item.conn_name }}'
+    ip4: '{{ item.ip4 }}'
+    gw4: '{{ item.gw4 }}'
+    state: present
+  with_items:
+    - '{{ nmcli_bridge }}'
+  notify:
+    - restart networking
 
 ## Configure storage pool (if necessary)
 

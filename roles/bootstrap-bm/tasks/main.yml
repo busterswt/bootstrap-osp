@@ -21,8 +21,18 @@
     gw4: '{{ item.gw4 }}'
     mode: '{{ item.mode }}'
     state: present
-    with_items:
-      - '{{ nmcli_bond }}'
+  with_items:
+    - '{{ nmcli_bond }}'
+
+- name: Try nmcli add bond-slave(s)
+  community.general.nmcli:
+    type: bond-slave
+    conn_name: '{{ item.conn_name }}'
+    ifname: '{{ item.ifname }}'
+    master: '{{ item.master }}'
+    state: present
+  with_items:
+    - '{{ nmcli_bond_slave }}'
 
 ## Configure storage pool (if necessary)
 

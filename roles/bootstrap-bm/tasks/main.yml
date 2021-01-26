@@ -23,6 +23,8 @@
     state: present
   with_items:
     - '{{ nmcli_bond }}'
+  notify:
+    - restart_networking
 
 - name: Try nmcli add bond-slave(s)
   community.general.nmcli:
@@ -33,6 +35,8 @@
     state: present
   with_items:
     - '{{ nmcli_bond_slave }}'
+  notify:
+    - restart_networking
 
 ## Configure storage pool (if necessary)
 

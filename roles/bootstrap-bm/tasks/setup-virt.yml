@@ -1,16 +1,132 @@
 ---
-# Look for ISO/QCOW2 locally
-# Download image if not local
-# Install image using qemu
+# References:
+# https://docs.ansible.com/ansible/latest/collections/community/libvirt/virt_pool_module.html
+# https://docs.ansible.com/ansible/latest/collections/community/libvirt/virt_module.html
 
-- hosts: localhost
-  vars_prompt:
+- name: Create rhosp_virt directory
+  ansible.builtin.file:
+    path: "{{ virsh_image_working_dir }}"
+    state: directory
 
-    - name: url
-      prompt: What is the URL of the QCOW2 image?
-  
-  tasks:
+- name:	Set SELinux type for the libvirt image
+  community.general.sefcontext:
+    target: "{{ virsh_image_working_dir }}(/.*)?"
+    setype: virt_image_t
+    state: present
 
-    - name: Print the URL
-      ansible.builtin.debug:
-        msg: 'The URL is {{ url }}'
+- name: Check for RHEL qcow2 image
+  stat:
+    path: "{{ virsh_image_working_dir }}/{{ rhel_qcow2_image_name }}"
+  register: stat_result
+
+- name: Grab download location
+  pause:
+    prompt: "What is the URL of the RHEL8 QCOW2 image to download?"
+    echo: yes
+  when: "not stat_result.stat.exists | bool"
+  register: url_result
+
+- name: set the url fact
+  set_fact:
+    url: "{{ url_result }}"
+  when: url_result.user_input is defined
+
+- name: Download qcow2 image
+  get_url:
+    url: "{{ url.user_input }}"
+    dest: "{{ virsh_image_working_dir }}/{{ rhel_qcow2_image_name }}"
+    mode: '0440'
+  when: url is defined
+
+- name: Check for director image
+  stat:
+    path: "{{ virsh_image_working_dir }}/{{ director_qcow2_image_name }}"
+  register: stat2_result
+
+- name: Copy RHEL image to Director image
+  ansible.builtin.copy:
+    src: "{{ virsh_image_working_dir }}/{{ rhel_qcow2_image_name }}"
+    dest: "{{ virsh_image_working_dir }}/{{ director_qcow2_image_name }}"
+    owner: root
+    group: root
+    mode: '0644'
+  when: "not stat2_result.stat.exists | bool"
+
+- name: Resize director image
+  command: >
+    qemu-img resize '{{ director_qcow2_image_name }}' '{{ virsh_director_image_size }}'
+  args:
+    chdir: "{{ virsh_image_working_dir }}"
+
+- name: define virsh pool
+  community.libvirt.virt_pool:
+    command: define
+    name: "{{ virsh_pool_name }}"
+    xml: '{{ lookup("template", "templates/rhelosp.xml.j2") }}'
+
+- name: autostart virsh pool
+  community.libvirt.virt_pool:
+    name: "{{ virsh_pool_name }}"
+    autostart: yes
+
+- name: start virsh pool
+  community.libvirt.virt_pool:
+    state: active
+    name: "{{ virsh_pool_name }}"
+
+- name: Slurp id_rsa.pub contents
+  ansible.builtin.slurp:
+    src: /root/.ssh/id_rsa.pub
+  register: bm_director_id_rsa_pub
+
+- debug:
+    msg: "The pubkey is {{ bm_director_id_rsa_pub }}"
+
+- name: Create user-data for vm
+  ansible.builtin.template:
+    src: templates/user-data.j2
+    dest: "{{ virsh_image_working_dir }}/user-data"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create meta-data for vm
+  ansible.builtin.template:
+    src: templates/meta-data.j2
+    dest: "{{ virsh_image_working_dir }}/meta-data"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Generate configdrive iso
+  command: >
+    genisoimage -volid cidata -input-charset utf-8 -joliet -rock
+      -output configdrive-directorvm.iso user-data meta-data
+  args:
+    chdir: "{{ virsh_image_working_dir }}"
+
+- name: refresh virsh pool
+  community.libvirt.virt_pool:
+    command: refresh
+    name: "{{ virsh_pool_name }}"
+
+- name: determine memory for director vm
+  shell: >
+    expr $(free -m | awk '/^Mem/{print $2}') / 2
+  register: director_vm_memory
+
+- name: determine vcpus for director vm
+  shell: >
+    expr $(nproc) / 2
+  register: director_vm_vcpus
+
+- name: spin up director vm
+  community.libvirt.virt:
+    command: define
+    xml: "{{ lookup('template', 'templates/director_vm_template.xml.j2') }}"
+    autostart: yes
+
+- name: start director vm
+  community.libvirt.virt:
+    name: "{{ vm_director_hostname }}.{{ domain_name }}"
+    state: running

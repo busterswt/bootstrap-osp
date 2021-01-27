@@ -1,0 +1,14 @@
+#cloud-config
+ 
+groups:
+  - stack
+ 
+users:
+  - name: stack
+    gecos: Stack User
+    primary_group: stack
+    groups: wheel
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_password: true
+    ssh_authorized_keys:
+      - {{ bm_director_id_rsa_pub.content }} 

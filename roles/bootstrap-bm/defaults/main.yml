@@ -2,7 +2,14 @@
 # Defaults
 
 # baremetal director hostname (FQDN)
-bm_director_hostname: director.osp
+bm_director_hostname: directorbm
+vm_director_hostname: directorvm
+domain_name: osp.rpc.rackspace.com
+
+# RHEL QCOW2 Image for virtual director
+rhel_qcow2_image_name: rhel-8.3-x86_64-kvm.qcow2
+director_qcow2_image_name: directorvm.qcow2
+
 
 # Bonding
 # bonding_mode: <active-backup, 802.3ad>
@@ -97,3 +104,8 @@ nmcli_bridge_slave:
   - conn_name: rpc_host
     ifname: rpc_host
     master: br-ex
+
+# Virsh defaults
+virsh_image_working_dir: "/rhosp_virt"
+virsh_pool_name: "rhosp_virt"
+virsh_director_image_size: 300G

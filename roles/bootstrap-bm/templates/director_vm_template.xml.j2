@@ -1,0 +1,36 @@
+<domain type='kvm'>
+  <name>{{ vm_director_hostname }}.{{ domain_name }}</name>
+  <uuid>4dea24b3-1d52-d8f3-2516-782e98a23fa0</uuid>
+  <memory>{{ director_vm_memory.stdout }}</memory>
+  <vcpu>{{ director_vm_vcpus.stdout }}</vcpu>
+  <os>
+    <type arch="i686">hvm</type>
+  </os>
+  <clock sync="localtime"/>
+  <devices>
+    <emulator>/usr/libexec/qemu-kvm</emulator>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='{{ virsh_image_working_dir }}/{{ director_qcow2_image_name }}'/>
+      <backingStore/>
+      <target dev='vda' bus='virtio'/>
+      <alias name='virtio-disk0'/>
+    </disk>
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='{{ virsh_image_working_dir }}/configdrive-directorvm.iso' index='1'/>
+      <backingStore/>
+      <target dev='sda' bus='sata'/>
+      <readonly/>
+      <alias name='sata0-0-0'/>
+      <address type='drive' controller='0' bus='0' target='0' unit='0'/>
+    </disk>
+    <interface type='network'>
+      <source network='default'/>
+      <mac address='24:42:53:21:52:45'/>
+      <target dev='vnet0'/>
+      <model type='virtio'/>
+      <alias name='net0'/>
+    </interface>
+  </devices>
+</domain>

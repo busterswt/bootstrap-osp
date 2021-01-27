@@ -1,10 +1,42 @@
 ---
-# Bond vars
+# Defaults
+
+# baremetal director hostname (FQDN)
+bm_director_hostname: director.osp
+
+# Bonding
+# bonding_mode: <active-backup, 802.3ad>
+# bonding_lacp_rate: <slow, fast>
+# bonding_lacp_hash_policy: <layer2, layer3+4, layer2+3>
+
+bonding_mode: active-backup
+bonding_lacp_rate: fast
+bonding_lacp_hash_policy: layer3+4
+
+# There are many networks that make up the infrastructure. Each requires a
+# VLAN ID (VID). These should be overridden for each deployment.
+vlan_rpc_host: 200
+vlan_rpc_ipmi: 201
+vlan_rpc_pxe: 202
+vlan_rpc_api: 203
+vlan_rpc_tunnel: 204
+vlan_rpc:storage: 205
+vlan_rpc_storage_replication: 206
+vlan_rpc_lbaas_mgmt: 207
+vlan_rpc_gateway: 208
+vlan_rpc_tenant: 209
+
+
+####################
+# Networking       #
+####################
+
+# Bonds
 nmcli_bond:
   - conn_name: bond0
     ip4: ''
     gw4: ''
-    mode: active-backup
+    mode: {{ bonding_mode }}
 nmcli_bond_slave:
   - conn_name: eno3
     ifname: eno3
@@ -13,7 +45,16 @@ nmcli_bond_slave:
     ifname: eno4
     master: bond0
 
-# Bridge vars
+# VLANs
+nmcli_vlan:
+  - conn_name: rpc_host
+    vlandev: bond0
+    vlanid: {{ vlan_rpc_host }}
+  - conn_name: rpc_ipmi
+    vlandev: bond0
+    vlanid: {{ vlan_rpc_ipmi }}
+
+# Bridges
 nmcli_bridge:
   - conn_name: br-ctlplane
     ip4: ''
@@ -24,3 +65,10 @@ nmcli_bridge:
   - conn_name: br-ex
     ip4: ''
     gw4: ''
+nmcli_bridge_slave:
+  - conn_name: rpc_host
+    ifname: rpc_host
+    master: br-ctlplane
+  - conn_name: rpc_ipmi
+    ifname: rpc_ipmi
+    master: br-ipmi

@@ -38,6 +38,18 @@
   notify:
     - restart networking
 
+- name: Configure nmcli vlan(s)
+  community.general.nmcli:
+    type: vlan
+    conn_name: '{{ item.conn_name }}'
+    ip4: '{{ item.ip4 }}'
+    gw4: '{{ item.gw4 }}'
+    state: present
+  with_items:
+    - '{{ nmcli_vlan }}'
+  notify:
+    - restart networking
+
 - name: Configure nmcli bridge(s)
   community.general.nmcli:
     type: bridge
@@ -50,6 +62,16 @@
   notify:
     - restart networking
 
+- name: Try nmcli add bridge-slave(s)
+  community.general.nmcli:
+    type: bridge-slave
+    conn_name: '{{ item.conn_name }}'
+    ifname: '{{ item.ifname }}'
+    master: '{{ item.master }}'
+    state: present
+  with_items:
+    - '{{ nmcli_bridge_slave }}'
+  notify:
+    - restart networking
+
 ## Configure storage pool (if necessary)
-
-

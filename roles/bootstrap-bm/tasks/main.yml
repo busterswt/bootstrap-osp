@@ -2,4 +2,7 @@
 - name: setup networking
   include: setup-networking.yml
 
+- name: setup virtual director
+  include: setup-virt.yml
+
 ## Configure storage pool (if necessary)

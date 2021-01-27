@@ -1,1 +1,16 @@
 ---
+# Look for ISO/QCOW2 locally
+# Download image if not local
+# Install image using qemu
+
+- hosts: localhost
+  vars_prompt:
+
+    - name: url
+      prompt: What is the URL of the QCOW2 image?
+  
+  tasks:
+
+    - name: Print the URL
+      ansible.builtin.debug:
+        msg: 'The URL is {{ url }}'

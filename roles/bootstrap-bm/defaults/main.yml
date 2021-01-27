@@ -20,12 +20,30 @@ vlan_rpc_ipmi: 201
 vlan_rpc_pxe: 202
 vlan_rpc_api: 203
 vlan_rpc_tunnel: 204
-vlan_rpc:storage: 205
+vlan_rpc_storage: 205
 vlan_rpc_storage_replication: 206
 vlan_rpc_lbaas_mgmt: 207
 vlan_rpc_gateway: 208
 vlan_rpc_tenant: 209
 
+# Default infrastructure network CIDRs
+ip_rpc_host: 10.240.0.0/22
+ip_rpc_ipmi: 172.23.204.0/22
+ip_rpc_pxe: 172.23.208.0/22
+ip_rpc_api: 172.23.236.0/22
+ip_rpc_tunnel: 172.23.240.0/22
+ip_rpc_storage: 172.23.244.0/22
+ip_rpc_storage_replication: 172.23.248.0/22
+ip_rpc_lbaas_mgmt: 172.23.252.0/22
+ip_rpc_gateway: 10.239.0.0/22
+ip_rpc_tenant: 10.242.0.0/22
+
+# Some infrastructure networks have addresses and routes on both the
+# baremetal and virtual director nodes.
+bm_ip_rpc_host: 10.240.0.40/22
+bm_ip_rpc_ipmi: 172.23.204.40/22
+bm_ip_rpc_pxe: 172.23.208.40/22
+bm_gw_rpc_host: 10.240.0.1
 
 ####################
 # Networking       #
@@ -36,7 +54,7 @@ nmcli_bond:
   - conn_name: bond0
     ip4: ''
     gw4: ''
-    mode: {{ bonding_mode }}
+    mode: '{{ bonding_mode }}'
 nmcli_bond_slave:
   - conn_name: eno3
     ifname: eno3
@@ -48,27 +66,34 @@ nmcli_bond_slave:
 # VLANs
 nmcli_vlan:
   - conn_name: rpc_host
+    ip4: ''
+    gw4: ''
     vlandev: bond0
-    vlanid: {{ vlan_rpc_host }}
+    vlanid: '{{ vlan_rpc_host }}'
   - conn_name: rpc_ipmi
+    ip4: ''
+    gw4: ''
     vlandev: bond0
-    vlanid: {{ vlan_rpc_ipmi }}
+    vlanid: '{{ vlan_rpc_ipmi }}'
 
 # Bridges
 nmcli_bridge:
   - conn_name: br-ctlplane
-    ip4: ''
+    ip4: '{{ bm_ip_rpc_pxe }}'
     gw4: ''
   - conn_name: br-ipmi
-    ip4: ''
+    ip4: '{{ bm_ip_rpc_ipmi }}'
     gw4: ''
   - conn_name: br-ex
-    ip4: ''
-    gw4: ''
+    ip4: '{{ bm_ip_rpc_host }}'
+    gw4: '{{ bm_gw_rpc_host }}'
 nmcli_bridge_slave:
-  - conn_name: rpc_host
-    ifname: rpc_host
+  - conn_name: eno1
+    ifname: eno1
     master: br-ctlplane
   - conn_name: rpc_ipmi
     ifname: rpc_ipmi
     master: br-ipmi
+  - conn_name: rpc_host
+    ifname: rpc_host
+    master: br-ex

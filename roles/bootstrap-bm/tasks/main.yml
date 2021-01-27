@@ -44,6 +44,8 @@
     conn_name: '{{ item.conn_name }}'
     ip4: '{{ item.ip4 }}'
     gw4: '{{ item.gw4 }}'
+    vlandev: '{{ item.vlandev }}'
+    vlanid: '{{	item.vlanid }}'
     state: present
   with_items:
     - '{{ nmcli_vlan }}'
